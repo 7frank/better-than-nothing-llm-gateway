@@ -2,7 +2,11 @@ import Fastify, { type FastifyRequest, type FastifyReply } from "fastify";
 
 import type ProviderManager from "./ProviderManager";
 import OpenAI from "openai";
-import type { ChatCompletionCreateParams } from "openai/resources/chat/completions.mjs";
+import type {
+  ChatCompletionCreateParams,
+  ChatCompletionCreateParamsNonStreaming,
+} from "openai/resources/chat/completions.mjs";
+import type { Headers } from "openai/core";
 
 export function getApi(providers: ProviderManager) {
   const fastify = Fastify({ logger: true });
@@ -16,25 +20,21 @@ export function getApi(providers: ProviderManager) {
         const provider = providers.selectProvider();
         const modifiedRequest =
           provider.requestCallback?.(request, provider) ?? request;
-
         const llm = new OpenAI({
           baseURL: provider.baseURL,
-          model: request.body.model,
-          headers: modifiedRequest.headers,
+          apiKey: "dummyKey",
         });
 
-        const response = llm.chat.completions.create(
-          modifiedRequest.body as ChatCompletionCreateParams
-        );
+        const args = modifiedRequest.body as ChatCompletionCreateParams;
+        const headers = { ...modifiedRequest.headers } as Headers;
+        const response = llm.chat.completions.create(args, { headers });
 
         const modifiedResponse =
           provider.responseCallback?.(response) ?? request;
         reply.send(modifiedResponse.data);
       } catch (error: any) {
-        fastify.log.error(
-          "Error:",
-          error.response ? error.response.data : error.message
-        );
+        console.log(error.message);
+        fastify.log.error(error.message);
         reply.status(500).send("Internal Server Error");
       }
     }

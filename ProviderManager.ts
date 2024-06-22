@@ -23,7 +23,7 @@ export const requestLogger = (
     chalk.underline(req.routeOptions.url),
     chalk.bgBlue("Handler"),
     chalk.underline(provider.providerName),
-    "Model",
+    chalk.bgBlue("Model"),
     chalk.underline((req.body as any).model)
   );
   return req;

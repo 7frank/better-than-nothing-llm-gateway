@@ -35,10 +35,12 @@ export function getApi(providers: ProviderManager) {
 
         const modifiedResponse =
           provider.responseCallback?.(response) ?? response;
-        reply.send(modifiedResponse);
+        reply
+          .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
+          .send(modifiedResponse);
       } catch (error: any) {
         fastify.log.error(error.message);
-        reply.status(500).send("Internal Server Error");
+        reply.status(500).send("Internal Server Error"+error.message);
       }
     }
   );

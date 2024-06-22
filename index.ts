@@ -10,10 +10,8 @@ const providerManager = new ProviderManager();
 await providerManager.addProvider(async () => ({
   models: ["mistral:latest"],
   providerName: "Ollama-GPU",
-  baseURL: "http://localhost:11434/v1/chat/completions",
-  headers: {
-    apiKey: "",
-  },
+  baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1",
+  headers: {},
   weight: 1,
   requestCallback: requestLogger,
 }));
@@ -21,7 +19,7 @@ await providerManager.addProvider(async () => ({
 await providerManager.addProvider(async () => ({
   models: ["nomic-embed-text:latest"],
   providerName: "Ollama-Local",
-  baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1/chat/completions",
+  baseURL: "http://localhost:11434/v1",
   headers: {},
   weight: 1,
 }));

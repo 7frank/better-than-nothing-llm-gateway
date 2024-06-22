@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
-import chalk from "chalk"
+import chalk from "chalk";
 interface ProviderConfig {
   models: string[];
   providerName: string;
@@ -18,7 +18,14 @@ export const requestLogger = (
   req: FastifyRequest,
   provider: ProviderConfig
 ) => {
-  console.log(chalk.bgBlue("Request"), chalk.underline(req.routerPath), chalk.bgBlue("Handler"), chalk.underline(provider.providerName));
+  console.log(
+    chalk.bgBlue("Request"),
+    chalk.underline(req.routeOptions.url),
+    chalk.bgBlue("Handler"),
+    chalk.underline(provider.providerName),
+    "Model",
+    chalk.underline((req.body as any).model)
+  );
   return req;
 };
 

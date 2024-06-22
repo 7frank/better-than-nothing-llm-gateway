@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import type { ChatCompletionCreateParams } from "openai/resources/chat/completions.mjs";
 
 export function getApi(providers: ProviderManager) {
-  const fastify = Fastify({ logger: false });
+  const fastify = Fastify({ logger: true });
   fastify.post(
     "/v1/chat/completions",
     async (
@@ -17,7 +17,11 @@ export function getApi(providers: ProviderManager) {
         const modifiedRequest =
           provider.requestCallback?.(request, provider) ?? request;
 
-        const llm = new OpenAI({ baseURL: provider.baseURL });
+        const llm = new OpenAI({
+          baseURL: provider.baseURL,
+          model: request.body.model,
+          headers: modifiedRequest.headers,
+        });
 
         const response = llm.chat.completions.create(
           modifiedRequest.body as ChatCompletionCreateParams

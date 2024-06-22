@@ -33,7 +33,6 @@ export function getApi(providers: ProviderManager) {
           provider.responseCallback?.(response) ?? request;
         reply.send(modifiedResponse.data);
       } catch (error: any) {
-        console.log(error.message);
         fastify.log.error(error.message);
         reply.status(500).send("Internal Server Error");
       }

@@ -9,7 +9,7 @@ interface ProviderConfig {
     req: FastifyRequest,
     config: ProviderConfig
   ) => FastifyRequest;
-  responseCallback?: (res: any) => any;
+  responseCallback?: (res: FastifyReply) => FastifyReply;
   weight: number;
   currentWeight?: number;
 }

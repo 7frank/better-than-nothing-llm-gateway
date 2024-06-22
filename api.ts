@@ -20,6 +20,7 @@ export function getApi(providers: ProviderManager) {
         const provider = providers.selectProvider();
         const modifiedRequest =
           provider.requestCallback?.(request, provider) ?? request;
+
         const llm = new OpenAI({
           baseURL: provider.baseURL,
           apiKey: "dummyKey",
@@ -27,6 +28,17 @@ export function getApi(providers: ProviderManager) {
 
         const args = modifiedRequest.body as ChatCompletionCreateParams;
         const headers = { ...modifiedRequest.headers } as Headers;
+
+        if (!provider.models.some((m) => m == args.model)) {
+          reply
+            .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
+            .status(400)
+            .send(
+              `Provider: '${args.model}' Model not found. Available Models:` +
+                JSON.stringify(provider.models)
+            );
+          return;
+        }
 
         // TODO type conversion
         const response = (await llm.chat.completions.create(args, {
@@ -40,7 +52,7 @@ export function getApi(providers: ProviderManager) {
           .send(modifiedResponse);
       } catch (error: any) {
         fastify.log.error(error.message);
-        reply.status(500).send("Internal Server Error"+error.message);
+        reply.status(500).send("Internal Server Error" + error.message);
       }
     }
   );

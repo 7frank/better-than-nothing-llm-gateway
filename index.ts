@@ -7,14 +7,22 @@ dotenv.config();
 
 const providerManager = new ProviderManager();
 
-await providerManager.addProvider(async () => ({
-  models: ["mistral:latest"],
-  providerName: "Ollama-GPU",
-  baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1",
-  headers: {},
-  weight: 1,
-  requestCallback: requestLogger,
-}));
+await providerManager.addProvider(async () => {
+  const availableModels = await fetch(
+    "http://ollama.kong.7frank.internal.jambit.io/api/tags"
+  )
+    .then((r) => r.json())
+    .then((r) => r.models.map((m) => m.name));
+
+  return {
+    models: availableModels,
+    providerName: "Ollama-GPU",
+    baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1",
+    headers: {},
+    weight: 1,
+    requestCallback: requestLogger,
+  };
+});
 
 await providerManager.addProvider(async () => ({
   models: ["nomic-embed-text:latest"],

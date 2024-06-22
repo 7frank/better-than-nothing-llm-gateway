@@ -37,10 +37,13 @@ class ProviderManager {
   async addProvider(
     configFunc: () => Promise<ProviderConfig>
   ): Promise<ProviderConfig> {
-    const config = await configFunc();
-    config.currentWeight = config.weight;
-    this.providers.push(config);
-    return config;
+    return await configFunc()
+      .then((config) => {
+        config.currentWeight = config.weight;
+        this.providers.push(config);
+        return config;
+      })
+      .catch((e) => console.log(e));
   }
 
   getProviders(): ProviderConfig[] {

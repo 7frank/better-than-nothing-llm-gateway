@@ -27,11 +27,15 @@ export function getApi(providers: ProviderManager) {
 
         const args = modifiedRequest.body as ChatCompletionCreateParams;
         const headers = { ...modifiedRequest.headers } as Headers;
-        const response = llm.chat.completions.create(args, { headers });
+
+        // TODO type conversion
+        const response = (await llm.chat.completions.create(args, {
+          headers,
+        })) as unknown as FastifyReply;
 
         const modifiedResponse =
-          provider.responseCallback?.(response) ?? request;
-        reply.send(modifiedResponse.data);
+          provider.responseCallback?.(response) ?? response;
+        reply.send(modifiedResponse);
       } catch (error: any) {
         fastify.log.error(error.message);
         reply.status(500).send("Internal Server Error");

@@ -23,12 +23,15 @@ export function getApi(providers: ProviderManager) {
           provider.requestCallback?.(request, provider) ?? request;
 
         const llm = new OpenAI({
-          baseURL: provider.baseURL,
+          baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1",
           apiKey: "dummyKey",
         });
 
         const args = modifiedRequest.body as ChatCompletionCreateParams;
-        const headers = { ...modifiedRequest.headers } as Headers;
+
+        const { host, ...rest } = modifiedRequest.headers;
+
+        const headers = rest as Headers;
 
         if (!provider.models.some((m) => m == args.model)) {
           reply
@@ -48,6 +51,7 @@ export function getApi(providers: ProviderManager) {
 
         const modifiedResponse =
           provider.responseCallback?.(response) ?? response;
+
         reply
           .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
           .send(modifiedResponse);

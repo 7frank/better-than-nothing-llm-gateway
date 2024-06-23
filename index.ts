@@ -5,7 +5,6 @@ import { getApi } from "./api";
 
 dotenv.config();
 
-
 async function getOllamaModels(
   baseUrl = "http://localhost:11434"
 ): Promise<string[]> {
@@ -13,7 +12,6 @@ async function getOllamaModels(
     .then((r) => r.json())
     .then((r) => r.models.map((m) => m.name));
 }
-
 
 const providerManager = new ProviderManager();
 

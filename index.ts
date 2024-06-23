@@ -10,7 +10,10 @@ async function getOllamaModels(
 ): Promise<string[]> {
   return await fetch(baseUrl + "/api/tags")
     .then((r) => r.json())
-    .then((r) => r.models.map((m) => m.name));
+    .then((r) => r.models.map((m) => m.name))
+    .catch((e) =>
+      console.error("Error: Could not retrieve list of models - ", e.message)
+    );
 }
 
 const providerManager = new ProviderManager();
@@ -21,7 +24,7 @@ await providerManager.addProvider(async () => {
   );
 
   return {
-    models: availableModels,
+    models: availableModels ?? [],
     providerName: "Ollama-GPU",
     baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1",
     headers: {},
@@ -33,13 +36,14 @@ await providerManager.addProvider(async () => {
 await providerManager.addProvider(async () => {
   const availableModels = await getOllamaModels("http://localhost:11434");
   return {
-    models: availableModels,
+    models: availableModels ?? [],
     providerName: "Ollama-Local",
     baseURL: "http://localhost:11434/v1",
     headers: {},
     weight: 1,
   };
 });
+
 
 const fastify = getApi(providerManager);
 const PORT = Number(process.env.PORT) || 3000;

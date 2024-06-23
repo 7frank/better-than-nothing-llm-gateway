@@ -1,6 +1,15 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import chalk from "chalk";
+
 import type { ChatCompletionCreateParams } from "openai/resources/chat/completions.mjs";
+
+import WRRPool from "wrr-pool";
+
+interface Pool<T extends { weight: number }> {
+  add: (config: T, weight: T["weight"]) => void;
+  get: (fn: (t: T) => boolean) => { value: T; weight: number };
+}
+
 interface ProviderConfig {
   models: string[];
   providerName: string;
@@ -12,7 +21,6 @@ interface ProviderConfig {
   ) => FastifyRequest;
   responseCallback?: (res: FastifyReply) => FastifyReply;
   weight: number;
-  currentWeight?: number;
 }
 
 export const requestLogger = (
@@ -32,18 +40,16 @@ export const requestLogger = (
 
 class ProviderManager {
   private providers: ProviderConfig[] = [];
+  private pool = new WRRPool() as Pool<ProviderConfig>;
   private currentIndex: number = -1;
   private currentWeight: number = 0;
-
-
 
   async addProvider(
     configFunc: () => Promise<ProviderConfig>
   ): Promise<ProviderConfig> {
     return await configFunc()
       .then((config) => {
-        config.currentWeight = config.weight;
-        this.providers.push(config);
+        this.pool.add(config, config.weight);
         return config;
       })
       .catch((e) => console.log(e));
@@ -53,28 +59,11 @@ class ProviderManager {
     return this.providers;
   }
 
-  selectProvider(config:ChatCompletionCreateParams): ProviderConfig {
-    if (this.providers.length === 0) {
-      throw new Error("No providers available");
-    }
-    
-    while (true) {
-      this.currentIndex = (this.currentIndex + 1) % this.providers.length;
-      if (this.currentIndex === 0) {
-        this.currentWeight = this.currentWeight - 1;
-        if (this.currentWeight <= 0) {
-          this.currentWeight = Math.max(...this.providers.map((p) => p.weight));
-          if (this.currentWeight === 0) {
-            // FIXME
-            return null;
-          }
-        }
-      }
-
-      if (this.providers[this.currentIndex].weight >= this.currentWeight) {
-        return this.providers[this.currentIndex];
-      }
-    }
+  selectProvider(config: ChatCompletionCreateParams): ProviderConfig {
+    const selected = this.pool.get(function (v) {
+      return v.models.some((it) => it == config.model);
+    });
+    return selected?.value;
   }
 }
 

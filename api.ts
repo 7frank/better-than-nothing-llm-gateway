@@ -19,6 +19,17 @@ export function getApi(providers: ProviderManager) {
       let provider;
       try {
         provider = providers.selectProvider(request.body);
+
+        if (!provider) {
+          reply
+            .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
+            .status(400)
+            .send(
+              `No Provider found for: '${request.body.model}'`
+            );
+          return;
+        }
+
         const modifiedRequest =
           provider.requestCallback?.(request, provider) ?? request;
 

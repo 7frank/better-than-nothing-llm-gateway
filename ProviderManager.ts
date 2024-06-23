@@ -1,5 +1,6 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import chalk from "chalk";
+import type { ChatCompletionCreateParams } from "openai/resources/chat/completions.mjs";
 interface ProviderConfig {
   models: string[];
   providerName: string;
@@ -34,6 +35,8 @@ class ProviderManager {
   private currentIndex: number = -1;
   private currentWeight: number = 0;
 
+
+
   async addProvider(
     configFunc: () => Promise<ProviderConfig>
   ): Promise<ProviderConfig> {
@@ -50,11 +53,11 @@ class ProviderManager {
     return this.providers;
   }
 
-  selectProvider(): ProviderConfig {
+  selectProvider(config:ChatCompletionCreateParams): ProviderConfig {
     if (this.providers.length === 0) {
       throw new Error("No providers available");
     }
-
+    
     while (true) {
       this.currentIndex = (this.currentIndex + 1) % this.providers.length;
       if (this.currentIndex === 0) {

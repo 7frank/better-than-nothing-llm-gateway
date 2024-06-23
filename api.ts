@@ -18,7 +18,7 @@ export function getApi(providers: ProviderManager) {
     ) => {
       let provider;
       try {
-        provider = providers.selectProvider();
+        provider = providers.selectProvider(request.body);
         const modifiedRequest =
           provider.requestCallback?.(request, provider) ?? request;
 

@@ -1,6 +1,6 @@
 # llm-gateway
 
-LLM-Gateway - put your configurations for ollama,  openai, etc behind a gateway behind on
+LLM-Gateway - put your configurations for ollama, openai, etc behind a gateway behind on
 
 To install dependencies:
 
@@ -22,3 +22,7 @@ This project was created using `bun init` in bun v1.0.25. [Bun](https://bun.sh) 
 - zod schema and openapi endpoint
 - loadbalancing
 - resilience
+
+# Questions
+
+- what about "sticky" request headers that are currently in place in k8s to ensure that conversations are handled by the same container. Does this interfere with the load balancer approach?

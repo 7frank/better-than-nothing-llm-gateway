@@ -6,6 +6,7 @@ import type { ChatCompletionCreateParams } from "openai/resources/chat/completio
 import WRRPool from "wrr-pool";
 
 interface Pool<T extends { weight: number }> {
+  peers: { value: T }[];
   add: (config: T, weight: T["weight"]) => void;
   get: (fn: (t: T) => boolean) => { value: T; weight: number };
 }
@@ -39,7 +40,6 @@ export const requestLogger = (
 };
 
 class ProviderManager {
-  private providers: ProviderConfig[] = [];
   private pool = new WRRPool() as Pool<ProviderConfig>;
   private currentIndex: number = -1;
   private currentWeight: number = 0;
@@ -56,7 +56,7 @@ class ProviderManager {
   }
 
   getProviders(): ProviderConfig[] {
-    return this.providers;
+    return this.pool.peers.map((p) => p.value) as any;
   }
 
   selectProvider(config: ChatCompletionCreateParams): ProviderConfig {

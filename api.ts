@@ -21,11 +21,16 @@ export function getApi(providers: ProviderManager) {
         provider = providers.selectProvider(request.body);
 
         if (!provider) {
+          const p = providers
+            .getProviders()
+            .map(({ models, providerName }) => ({ providerName, models }));
+          // TODO requires other header not forwarded
           reply
             .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
             .status(400)
             .send(
-              `No Provider found for: '${request.body.model}'`
+              `No Provider available for '${request.body.model}': ` +
+                JSON.stringify(p)
             );
           return;
         }

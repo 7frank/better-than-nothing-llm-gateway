@@ -5,14 +5,22 @@ import { getApi } from "./api";
 
 dotenv.config();
 
+
+async function getOllamaModels(
+  baseUrl = "http://localhost:11434"
+): Promise<string[]> {
+  return await fetch(baseUrl + "/api/tags")
+    .then((r) => r.json())
+    .then((r) => r.models.map((m) => m.name));
+}
+
+
 const providerManager = new ProviderManager();
 
 await providerManager.addProvider(async () => {
-  const availableModels = await fetch(
-    "http://ollama.kong.7frank.internal.jambit.io/api/tags"
-  )
-    .then((r) => r.json())
-    .then((r) => r.models.map((m) => m.name));
+  const availableModels = await getOllamaModels(
+    "http://ollama.kong.7frank.internal.jambit.io"
+  );
 
   return {
     models: availableModels,
@@ -24,13 +32,16 @@ await providerManager.addProvider(async () => {
   };
 });
 
-await providerManager.addProvider(async () => ({
-  models: ["nomic-embed-text:latest"],
-  providerName: "Ollama-Local",
-  baseURL: "http://localhost:11434/v1",
-  headers: {},
-  weight: 1,
-}));
+await providerManager.addProvider(async () => {
+  const availableModels = await getOllamaModels("http://localhost:11434");
+  return {
+    models: availableModels,
+    providerName: "Ollama-Local",
+    baseURL: "http://localhost:11434/v1",
+    headers: {},
+    weight: 1,
+  };
+});
 
 const fastify = getApi(providerManager);
 const PORT = Number(process.env.PORT) || 3000;

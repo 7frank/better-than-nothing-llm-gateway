@@ -16,8 +16,9 @@ export function getApi(providers: ProviderManager) {
       request: FastifyRequest<{ Body: ChatCompletionCreateParams }>,
       reply: FastifyReply
     ) => {
+      let provider;
       try {
-        const provider = providers.selectProvider();
+        provider = providers.selectProvider();
         const modifiedRequest =
           provider.requestCallback?.(request, provider) ?? request;
 
@@ -52,7 +53,10 @@ export function getApi(providers: ProviderManager) {
           .send(modifiedResponse);
       } catch (error: any) {
         fastify.log.error(error.message);
-        reply.status(500).send("Internal Server Error" + error.message);
+        reply
+          .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
+          .status(500)
+          .send("Internal Server Error" + error.message);
       }
     }
   );

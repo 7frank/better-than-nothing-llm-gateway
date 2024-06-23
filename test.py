@@ -27,5 +27,7 @@ response = requests.post(f"{base_url}/chat/completions", headers={**headers, **j
 if response.status_code == 200:
     result = response.json()['choices'][0]['message']
     print(result)
+    print(response.headers['x-llm-proxy-forwarded-to'])
 else:
     print("Failed to retrieve data:", response.status_code, response.text)
+    print(response.headers['x-llm-proxy-forwarded-to'])

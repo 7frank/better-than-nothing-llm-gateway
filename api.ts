@@ -39,7 +39,7 @@ export function getApi(providers: ProviderManager) {
           provider.requestCallback?.(request, provider) ?? request;
 
         const llm = new OpenAI({
-          baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1",
+          baseURL: provider.baseURL,
           apiKey: "dummyKey",
         });
 
@@ -80,6 +80,23 @@ export function getApi(providers: ProviderManager) {
       }
     }
   );
+
+  // fastify.post(
+  //   "/v1/embedding",
+  //   async (
+  //     request: FastifyRequest<{ Body: ChatCompletionCreateParams }>,
+  //     reply: FastifyReply
+  //   ) => {
+
+  //     const llm = new OpenAI({
+  //       baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1",
+  //       apiKey: "dummyKey",
+  //     });
+  //     llm.embeddings.create()
+
+
+  //   })
+
 
   return fastify;
 }

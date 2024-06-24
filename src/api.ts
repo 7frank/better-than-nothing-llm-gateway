@@ -88,14 +88,23 @@ export function getApi(
       const baseUrl = provider.baseURL.endsWith("/v1")
         ? provider.baseURL.replace(/\/v1(\/.*)?$/, "")
         : provider.baseURL;
+
+      // TODO what to do about the other params of request body
+      // TODO do we want to hand enumber arrays for inpuot too?
+      const { input, model } = request.body;
+
+      if (typeof input == "object" && input.length > 1) {
+        throw "Provider - Ollama does not support more than one input string";
+      }
+
       const res = await zFetch(
         OllamaEmbeddingsResponse,
         baseUrl + "/api/embeddings",
         {
           method: "POST",
           body: JSON.stringify({
-            model: "nomic-embed-text:latest",
-            prompt: "text",
+            model: "" + model,
+            prompt: typeof input == "string" ? input : input[0],
           }),
         }
       );

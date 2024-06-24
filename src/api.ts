@@ -14,55 +14,43 @@ export function getApi(providers: ProviderManager) {
       request: FastifyRequest<{ Body: ChatCompletionCreateParams }>,
       reply: FastifyReply
     ) => {
-      let provider;
       try {
-        provider = providers.selectProvider(request.body);
-
+        const provider = providers.selectProvider(request.body);
         if (!provider) {
-          const p = providers
+          const availableProviders = providers
             .getProviders()
             .map(({ models, providerName }) => ({ providerName, models }));
-          // TODO requires other header, not "forwarded"
           reply
             .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
             .status(400)
             .send(
-              `No Provider available for '${request.body.model}': ` +
-                JSON.stringify(p)
+              `No Provider available for '${request.body.model}': ${JSON.stringify(availableProviders)}`
             );
           return;
         }
 
         const modifiedRequest =
           provider.requestCallback?.(request, provider) ?? request;
-
         const llm = new OpenAI({
           baseURL: provider.baseURL,
           apiKey: "dummyKey",
         });
-
         const args = modifiedRequest.body as ChatCompletionCreateParams;
+        const { host, ...headers } = modifiedRequest.headers as Headers;
 
-        const { host, ...rest } = modifiedRequest.headers;
-
-        const headers = rest as Headers;
-
-        if (!provider.models.some((m) => m == args.model)) {
+        if (!provider.models.includes(args.model)) {
           reply
             .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
             .status(400)
             .send(
-              `Provider: '${args.model}' Model not found. Available Models:` +
-                JSON.stringify(provider.models)
+              `Provider: '${args.model}' Model not found. Available Models: ${JSON.stringify(provider.models)}`
             );
           return;
         }
 
-        // TODO type conversion
         const response = (await llm.chat.completions.create(args, {
           headers,
         })) as unknown as FastifyReply;
-
         const modifiedResponse =
           provider.responseCallback?.(response) ?? response;
 
@@ -74,7 +62,7 @@ export function getApi(providers: ProviderManager) {
         reply
           .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
           .status(500)
-          .send("Internal Server Error" + error.message);
+          .send(`Internal Server Error: ${error.message}`);
       }
     }
   );
@@ -87,7 +75,6 @@ export function getApi(providers: ProviderManager) {
       reply: FastifyReply
     ) => {
       const provider = providers.selectProvider(request.body);
-
 
       const llm = new OpenAI({
         baseURL: provider.baseURL,

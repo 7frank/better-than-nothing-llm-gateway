@@ -17,7 +17,7 @@ jambit_headers = {'apikey': jambit_api_key}
 data = {
      "stream": False,
     # One of the available models. See http://ollama.kong.7frank.internal.jambit.io/api/tags which are currently installed on the server
-    "model": "deepseek-coder:instruct", #"mistral:latest", # "deepseek-coder:instruct",
+    "model": "1deepseek-coder:instruct", #"mistral:latest", # "deepseek-coder:instruct",
     # Your messages.
     "messages": [{"role": "user", "content": "Say this is a test"}]
 }

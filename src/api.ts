@@ -4,10 +4,17 @@ import type ProviderManager from "./ProviderManager";
 import OpenAI from "openai";
 import type { ChatCompletionCreateParams } from "openai/resources/chat/completions.mjs";
 import type { Headers } from "openai/core";
-import type { EmbeddingCreateParams } from "openai/resources/embeddings.mjs";
+import type {
+  EmbeddingCreateParams,
+  CreateEmbeddingResponse,
+} from "openai/resources/embeddings.mjs";
 
 import { zFetch } from "./zFetch";
 import { z } from "zod";
+
+const OllamaEmbeddingsResponse = z.object({
+  embedding: z.number().array(),
+});
 
 export function getApi(
   providers: Awaited<ReturnType<ProviderManager["build"]>>
@@ -88,7 +95,7 @@ export function getApi(
       });
       // FIXME  move this ollama specific code into the provider
       const res = await zFetch(
-        z.any(),
+        OllamaEmbeddingsResponse,
         "http://localhost:11434/api/embeddings",
         {
           method: "POST",
@@ -105,7 +112,14 @@ export function getApi(
       // });
       // const res = await llm.embeddings.create(request.body);
 
-      reply.send(res);
+      const openAiResponse: CreateEmbeddingResponse = {
+        data: [{ embedding: res.embedding, index: 0, object: "embedding" }],
+        model: request.body.model,
+        object: "list",
+        usage: { prompt_tokens: 1, total_tokens: 1 }, // TODO how to get these from ollama
+      };
+
+      reply.send(openAiResponse);
     }
   );
 

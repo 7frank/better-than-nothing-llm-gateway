@@ -7,9 +7,7 @@ const ChatResponse = z.object({
   choices: z.object({ message: z.object({ content: z.string() }) }).array(),
 });
 
-const EmbeddingsResponse = z.object({
-  foo: z.number().array(),
-});
+
 
 let baseUrl: string;
 let headers: Record<string, string>;
@@ -85,7 +83,7 @@ describe("when getting embeddings", () => {
       body: JSON.stringify(data),
     });
     const msg = result
-    console.log(chalk.bgGreen(msg));
+    console.log(chalk.bgGreen(JSON.stringify(msg)));
     expect(msg).toBeTruthy();
   });
 });

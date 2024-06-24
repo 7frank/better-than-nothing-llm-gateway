@@ -1,24 +1,10 @@
 import * as dotenv from "dotenv";
-
+import { z } from "zod";
 import ProviderManager, { requestLogger } from "./ProviderManager";
 import { getApi } from "./api";
+import { getOllamaModels } from "./services/getOllamaModels";
 
 dotenv.config();
-
-async function getOllamaModels(
-  baseUrl = "http://localhost:11434"
-): Promise<string[]> {
-  return await fetch(baseUrl + "/api/tags")
-    .then((r) => r.json())
-    .then((r) => r.models.map((m) => m.name))
-    .catch((e) =>
-      console.error(
-        "Error: Could not retrieve models list - ",
-        baseUrl,
-        e.message
-      )
-    );
-}
 
 const providerManager = new ProviderManager();
 

@@ -10,11 +10,7 @@ import type {
 } from "openai/resources/embeddings.mjs";
 
 import { zFetch } from "./zFetch";
-import { z } from "zod";
-
-const OllamaEmbeddingsResponse = z.object({
-  embedding: z.number().array(),
-});
+import { OllamaEmbeddingsResponse } from "./types";
 
 export function getApi(
   providers: Awaited<ReturnType<ProviderManager["build"]>>
@@ -88,11 +84,6 @@ export function getApi(
     ) => {
       const provider = providers.selectProvider(request.body);
 
-      const OllamaEmbeddings = z.object({
-        model: z.string(),
-        prompt: z.string(),
-        keep_alive: z.number().optional(),
-      });
       // FIXME  move this ollama specific code into the provider
       const res = await zFetch(
         OllamaEmbeddingsResponse,

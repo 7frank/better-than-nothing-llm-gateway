@@ -2,12 +2,11 @@ import { describe, it, expect, beforeAll } from "bun:test";
 import { zFetch } from "./zFetch";
 import { z } from "zod";
 import chalk from "chalk";
-
-const ChatResponse = z.object({
-  choices: z.object({ message: z.object({ content: z.string() }) }).array(),
-});
-
-
+import {
+  OllamaEmbeddingsResponse,
+  OpenAiChatResponse,
+  OpenAiEmbeddingResponse,
+} from "./types";
 
 let baseUrl: string;
 let headers: Record<string, string>;
@@ -42,11 +41,15 @@ describe("when getting chat completion", () => {
       messages: [{ role: "user", content: "2+2" }],
     };
 
-    const result = await zFetch(ChatResponse, `${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(data),
-    });
+    const result = await zFetch(
+      OpenAiChatResponse,
+      `${baseUrl}/chat/completions`,
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data),
+      }
+    );
     const msg = result.choices[0].message.content;
     console.log(chalk.bgGreen(msg));
     expect(msg).toBeTruthy();
@@ -59,7 +62,7 @@ describe("when getting chat completion", () => {
       messages: [{ role: "user", content: "2+2" }],
     };
 
-    const promise = zFetch(ChatResponse, `${baseUrl}/chat/completions`, {
+    const promise = zFetch(OpenAiChatResponse, `${baseUrl}/chat/completions`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(data),
@@ -77,12 +80,16 @@ describe("when getting embeddings", () => {
       input: ["2+2"],
     };
 
-    const result = await zFetch(EmbeddingsResponse, `${baseUrl}/embeddings`, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(data),
-    });
-    const msg = result
+    const result = await zFetch(
+      OpenAiEmbeddingResponse,
+      `${baseUrl}/embeddings`,
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data),
+      }
+    );
+    const msg = result;
     console.log(chalk.bgGreen(JSON.stringify(msg)));
     expect(msg).toBeTruthy();
   });

@@ -5,6 +5,14 @@ import type {
   CreateEmbeddingResponse,
 } from "openai/resources/embeddings.mjs";
 
+export const OllamaApiTagsResponse = z.object({
+  models: z
+    .object({
+      name: z.string(),
+    })
+    .array(),
+})
+
 export const OllamaEmbeddingsResponse = z.object({
   embedding: z.number().array(),
 });

@@ -1,16 +1,8 @@
 import { zFetch } from "../zFetch";
 import * as dotenv from "dotenv";
-import { z } from "zod";
+import { OllamaApiTagsResponse } from "../types";
 
 dotenv.config();
-
-export const OllamaApiTagsResponse = z.object({
-  models: z
-    .object({
-      name: z.string(),
-    })
-    .array(),
-});
 
 export async function getOllamaModels(
   baseUrl = "http://localhost:11434"

@@ -14,8 +14,9 @@ export function getApi(providers: ProviderManager) {
       request: FastifyRequest<{ Body: ChatCompletionCreateParams }>,
       reply: FastifyReply
     ) => {
+      let provider;
       try {
-        const provider = providers.selectProvider(request.body);
+        provider = providers.selectProvider(request.body);
         if (!provider) {
           const availableProviders = providers
             .getProviders()

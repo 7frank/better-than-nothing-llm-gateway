@@ -42,8 +42,6 @@ export const requestLogger = (
 
 class ProviderManager {
   private pool = new WRRPool() as Pool<ProviderConfig>;
-  private currentIndex: number = -1;
-  private currentWeight: number = 0;
 
   async addProvider(
     configFunc: () => Promise<ProviderConfig>

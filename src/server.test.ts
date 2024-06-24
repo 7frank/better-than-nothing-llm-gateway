@@ -1,38 +1,42 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { describe, it, expect, beforeAll } from "bun:test";
 import { zFetch } from "./zFetch";
 import { z } from "zod";
 import chalk from "chalk";
 
-const ChatRequest = z.object({
+const ChatResponse = z.object({
   choices: z.object({ message: z.object({ content: z.string() }) }).array(),
 });
 
+const EmbeddingsResponse = z.object({
+  foo: z.number().array(),
+});
+
+let baseUrl: string;
+let headers: Record<string, string>;
+beforeAll(() => {
+  // Ensure VPN connection to jambit
+  baseUrl = "http://localhost:3000/v1";
+  // Dummy key for constructor appeasement
+  const openaiApiKey = "dummy_key";
+
+  // Setup the headers with the OpenAI API key
+  const dummyAuthHeaders = {
+    Authorization: `Bearer ${openaiApiKey}`,
+  };
+
+  // Specific headers for jambit's API
+  const jambitApiKey = "GLM0QqrHqGt7mNjumtC2VbQBDr9pcWUM";
+  const jambitHeaders = {
+    apikey: jambitApiKey,
+  };
+  headers = {
+    ...dummyAuthHeaders,
+    ...jambitHeaders,
+    "Content-Type": "application/json",
+  };
+});
+
 describe("when getting chat completion", () => {
-  let baseUrl: string;
-  let headers: Record<string, string>;
-  beforeEach(() => {
-    // Ensure VPN connection to jambit
-    baseUrl = "http://localhost:3000/v1";
-    // Dummy key for constructor appeasement
-    const openaiApiKey = "dummy_key";
-
-    // Setup the headers with the OpenAI API key
-    const dummyAuthHeaders = {
-      Authorization: `Bearer ${openaiApiKey}`,
-    };
-
-    // Specific headers for jambit's API
-    const jambitApiKey = "GLM0QqrHqGt7mNjumtC2VbQBDr9pcWUM";
-    const jambitHeaders = {
-      apikey: jambitApiKey,
-    };
-    headers = {
-      ...dummyAuthHeaders,
-      ...jambitHeaders,
-      "Content-Type": "application/json",
-    };
-  });
-
   it("with existing model, it will return valid response", async () => {
     const data = {
       stream: false,
@@ -40,7 +44,7 @@ describe("when getting chat completion", () => {
       messages: [{ role: "user", content: "2+2" }],
     };
 
-    const result = await zFetch(ChatRequest, `${baseUrl}/chat/completions`, {
+    const result = await zFetch(ChatResponse, `${baseUrl}/chat/completions`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(data),
@@ -57,7 +61,7 @@ describe("when getting chat completion", () => {
       messages: [{ role: "user", content: "2+2" }],
     };
 
-    const promise = zFetch(ChatRequest, `${baseUrl}/chat/completions`, {
+    const promise = zFetch(ChatResponse, `${baseUrl}/chat/completions`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(data),
@@ -65,5 +69,23 @@ describe("when getting chat completion", () => {
 
     const regex = /^No Provider available for 'nope-123-model'/;
     expect(() => promise).toThrow(regex);
+  });
+});
+
+describe("when getting embeddings", () => {
+  it("with existing model, it will return valid response", async () => {
+    const data = {
+      model: "deepseek-coder:instruct",
+      input: ["2+2"],
+    };
+
+    const result = await zFetch(EmbeddingsResponse, `${baseUrl}/embeddings`, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(data),
+    });
+    const msg = result
+    console.log(chalk.bgGreen(msg));
+    expect(msg).toBeTruthy();
   });
 });

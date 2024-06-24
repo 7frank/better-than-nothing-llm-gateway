@@ -6,6 +6,9 @@ import type { ChatCompletionCreateParams } from "openai/resources/chat/completio
 import type { Headers } from "openai/core";
 import type { EmbeddingCreateParams } from "openai/resources/embeddings.mjs";
 
+import { zFetch } from "./zFetch";
+import { z } from "zod";
+
 export function getApi(
   providers: Awaited<ReturnType<ProviderManager["build"]>>
 ) {
@@ -72,18 +75,35 @@ export function getApi(
 
   fastify.post(
     "/v1/embeddings",
-    { schema: {} },
     async (
       request: FastifyRequest<{ Body: EmbeddingCreateParams }>,
       reply: FastifyReply
     ) => {
       const provider = providers.selectProvider(request.body);
 
-      const llm = new OpenAI({
-        baseURL: provider.baseURL,
-        apiKey: "dummyKey",
+      const OllamaEmbeddings = z.object({
+        model: z.string(),
+        prompt: z.string(),
+        keep_alive: z.number().optional(),
       });
-      const res = await llm.embeddings.create(request.body);
+      // FIXME  move this ollama specific code into the provider
+      const res = await zFetch(
+        z.any(),
+        "http://localhost:11434/api/embeddings",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            model: "nomic-embed-text:latest",
+            prompt: "text",
+          }),
+        }
+      );
+
+      // const llm = new OpenAI({
+      //   baseURL: provider.baseURL,
+      //   apiKey: "dummyKey",
+      // });
+      // const res = await llm.embeddings.create(request.body);
 
       reply.send(res);
     }

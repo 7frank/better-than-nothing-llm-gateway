@@ -91,6 +91,7 @@ describe("when getting embeddings", () => {
     );
     const msg = result.data[0].embedding.slice(0,10);
     msg.push("..." as any)
+    console.log("returned Embedding Length:"+result.data[0].embedding.length);
     console.log(chalk.bgGreen(JSON.stringify(msg)));
     expect(msg).toBeTruthy();
   });

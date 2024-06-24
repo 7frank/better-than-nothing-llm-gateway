@@ -85,9 +85,12 @@ export function getApi(
       const provider = providers.selectProvider(request.body);
 
       // FIXME  move this ollama specific code into the provider
+      const baseUrl = provider.baseURL.endsWith("/v1")
+        ? provider.baseURL.replace(/\/v1(\/.*)?$/, "")
+        : provider.baseURL;
       const res = await zFetch(
         OllamaEmbeddingsResponse,
-        "http://localhost:11434/api/embeddings",
+        baseUrl + "/api/embeddings",
         {
           method: "POST",
           body: JSON.stringify({

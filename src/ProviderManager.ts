@@ -43,28 +43,40 @@ export const requestLogger = (
 class ProviderManager {
   private pool = new WRRPool() as Pool<ProviderConfig>;
 
-  async addProvider(
-    configFunc: () => Promise<ProviderConfig>
-  ): Promise<ProviderConfig> {
-    return await configFunc()
+  private promises: Promise<ProviderConfig | void>[] = [];
+
+  addProvider(configFunc: () => Promise<ProviderConfig>): ProviderManager {
+    const promise = configFunc()
       .then((config) => {
         this.pool.add(config, config.weight);
         return config;
       })
       .catch((e) => console.log(e));
+    this.promises.push(promise);
+
+    return this;
   }
 
-  getProviders(): ProviderConfig[] {
-    return this.pool.peers.map((p) => p.value) as any;
-  }
+  async build() {
+    await Promise.allSettled(this.promises);
 
-  selectProvider(
-    config: ChatCompletionCreateParams | EmbeddingCreateParams
-  ): ProviderConfig {
-    const selected = this.pool.get(function (v) {
-      return v.models.some((it) => it == config.model);
-    });
-    return selected?.value;
+    const getProviders = () => {
+      return this.pool.peers.map((p) => p.value) as ProviderConfig[];
+    };
+    const selectProvider = (
+      config: ChatCompletionCreateParams | EmbeddingCreateParams
+    ) => {
+      const selected = this.pool.get(function (v) {
+        return v.models.some((it) => it == config.model);
+      });
+      return selected?.value;
+    };
+
+    return {
+      getProviders,
+
+      selectProvider,
+    };
   }
 }
 

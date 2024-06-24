@@ -4,8 +4,8 @@ import { getApi } from "./api";
 import providers from "./providers";
 
 dotenv.config();
-
-const fastify = getApi(providers);
+const p =await providers.build()
+const fastify = getApi(p);
 const PORT = Number(process.env.PORT) || 3000;
 
 const start = async () => {

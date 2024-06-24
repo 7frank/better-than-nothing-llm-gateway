@@ -6,7 +6,9 @@ import type { ChatCompletionCreateParams } from "openai/resources/chat/completio
 import type { Headers } from "openai/core";
 import type { EmbeddingCreateParams } from "openai/resources/embeddings.mjs";
 
-export function getApi(providers: ProviderManager) {
+export function getApi(
+  providers: Awaited<ReturnType<ProviderManager["build"]>>
+) {
   const fastify = Fastify({ logger: true });
   fastify.post(
     "/v1/chat/completions",

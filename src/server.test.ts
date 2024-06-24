@@ -3,7 +3,9 @@ import { zFetch } from "./zFetch";
 import { z } from "zod";
 import chalk from "chalk";
 
-const ChatRequest = z.object({choices:z.any()});
+const ChatRequest = z.object({
+  choices: z.object({ message: z.object({ content: z.string() }) }).array(),
+});
 
 describe("when getting chat completion", () => {
   let baseUrl: string;
@@ -38,7 +40,7 @@ describe("when getting chat completion", () => {
       messages: [{ role: "user", content: "2+2" }],
     };
 
-    const result = await zFetch(z.any(), `${baseUrl}/chat/completions`, {
+    const result = await zFetch(ChatRequest, `${baseUrl}/chat/completions`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(data),
@@ -48,7 +50,6 @@ describe("when getting chat completion", () => {
     expect(msg).toBeTruthy();
   });
 
-
   it("with not existing model, it will return valid response", async () => {
     const data = {
       stream: false,
@@ -56,13 +57,13 @@ describe("when getting chat completion", () => {
       messages: [{ role: "user", content: "2+2" }],
     };
 
-    const promise=zFetch(ChatRequest, `${baseUrl}/chat/completions`, {
+    const promise = zFetch(ChatRequest, `${baseUrl}/chat/completions`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(data),
     });
-   
+
     const regex = /^No Provider available for 'nope-123-model'/;
-    expect(()=> promise).toThrow(regex);
+    expect(() => promise).toThrow(regex);
   });
 });

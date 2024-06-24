@@ -12,7 +12,11 @@ async function getOllamaModels(
     .then((r) => r.json())
     .then((r) => r.models.map((m) => m.name))
     .catch((e) =>
-      console.error("Error: Could not retrieve list of models - ", e.message)
+      console.error(
+        "Error: Could not retrieve models list - ",
+        baseUrl,
+        e.message
+      )
     );
 }
 
@@ -43,7 +47,6 @@ await providerManager.addProvider(async () => {
     weight: 1,
   };
 });
-
 
 const fastify = getApi(providerManager);
 const PORT = Number(process.env.PORT) || 3000;

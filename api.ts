@@ -2,11 +2,9 @@ import Fastify, { type FastifyRequest, type FastifyReply } from "fastify";
 
 import type ProviderManager from "./ProviderManager";
 import OpenAI from "openai";
-import type {
-  ChatCompletionCreateParams,
-  ChatCompletionCreateParamsNonStreaming,
-} from "openai/resources/chat/completions.mjs";
+import type { ChatCompletionCreateParams } from "openai/resources/chat/completions.mjs";
 import type { Headers } from "openai/core";
+import type { EmbeddingCreateParams } from "openai/resources/embeddings.mjs";
 
 export function getApi(providers: ProviderManager) {
   const fastify = Fastify({ logger: true });
@@ -24,7 +22,7 @@ export function getApi(providers: ProviderManager) {
           const p = providers
             .getProviders()
             .map(({ models, providerName }) => ({ providerName, models }));
-          // TODO requires other header not forwarded
+          // TODO requires other header, not "forwarded"
           reply
             .headers({ "x-llm-proxy-forwarded-to": JSON.stringify(provider) })
             .status(400)
@@ -81,22 +79,25 @@ export function getApi(providers: ProviderManager) {
     }
   );
 
-  // fastify.post(
-  //   "/v1/embedding",
-  //   async (
-  //     request: FastifyRequest<{ Body: ChatCompletionCreateParams }>,
-  //     reply: FastifyReply
-  //   ) => {
-
-  //     const llm = new OpenAI({
-  //       baseURL: "http://ollama.kong.7frank.internal.jambit.io/v1",
-  //       apiKey: "dummyKey",
-  //     });
-  //     llm.embeddings.create()
+  fastify.post(
+    "/v1/embeddings",
+    { schema: {} },
+    async (
+      request: FastifyRequest<{ Body: EmbeddingCreateParams }>,
+      reply: FastifyReply
+    ) => {
+      const provider = providers.selectProvider(request.body);
 
 
-  //   })
+      const llm = new OpenAI({
+        baseURL: provider.baseURL,
+        apiKey: "dummyKey",
+      });
+      const res = await llm.embeddings.create(request.body);
 
+      reply.send(res);
+    }
+  );
 
   return fastify;
 }

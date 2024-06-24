@@ -2,6 +2,7 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import chalk from "chalk";
 
 import type { ChatCompletionCreateParams } from "openai/resources/chat/completions.mjs";
+import type { EmbeddingCreateParams } from "openai/resources/embeddings";
 
 import WRRPool from "wrr-pool";
 
@@ -59,7 +60,9 @@ class ProviderManager {
     return this.pool.peers.map((p) => p.value) as any;
   }
 
-  selectProvider(config: ChatCompletionCreateParams): ProviderConfig {
+  selectProvider(
+    config: ChatCompletionCreateParams | EmbeddingCreateParams
+  ): ProviderConfig {
     const selected = this.pool.get(function (v) {
       return v.models.some((it) => it == config.model);
     });

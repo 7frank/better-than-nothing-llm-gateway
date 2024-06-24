@@ -19,7 +19,10 @@ This project was created using `bun init` in bun v1.0.25. [Bun](https://bun.sh) 
 # Ideas
 
 - svelte runes frontend to configure routes
+
 - zod schema and openapi endpoint
+  - https://github.com/elierotenberg/fastify-zod (too complicated for now)
+- config file with zod validation
 - loadbalancing
 - resilience
 

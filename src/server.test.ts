@@ -89,7 +89,8 @@ describe("when getting embeddings", () => {
         body: JSON.stringify(data),
       }
     );
-    const msg = result;
+    const msg = result.data[0].embedding.slice(0,10);
+    msg.push("..." as any)
     console.log(chalk.bgGreen(JSON.stringify(msg)));
     expect(msg).toBeTruthy();
   });
